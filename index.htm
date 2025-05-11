@@ -2,112 +2,170 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <title>Connexion & Vue intérieure</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Connexion</title>
+
+  <!-- Librairie panorama -->
+  <script src="lib/tdvplayer.js?v=1746958421035"></script>
+  <script src="script.js?v=1746958421035"></script>
+
+  <!-- Préchargements -->
+  <link rel="preload" href="locale/fr.txt?v=1746958421035" as="fetch" crossorigin="anonymous"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/r/3/0_0.webp?v=1746958421035" as="image"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/l/3/0_0.webp?v=1746958421035" as="image"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/u/3/0_0.webp?v=1746958421035" as="image"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/d/3/0_0.webp?v=1746958421035" as="image"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/f/3/0_0.webp?v=1746958421035" as="image"/>
+  <link rel="preload" href="media/panorama_BCCB815B_B645_0E90_41CA_2CF90794C189_0/b/3/0_0.webp?v=1746958421035" as="image"/>
+
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Virtual Tour"/>
+  <meta name="theme-color" content="#FFFFFF"/>
+
   <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
 
-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  background: lightgrey;
-  margin: 0;
-}
-.card {
-  width: 240px;
-  height: 254px;
-  padding: 0 15px;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 12px;
-  background: #fff;
-  border-radius: 20px;
-}
+    /* === FORMULAIRE DE CONNEXION === */
+    #login {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: lightgrey;
+    }
 
-.card > * {
-  margin: 0;
-}
+    .card {
+      width: 240px;
+      height: 254px;
+      padding: 0 15px;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      background: #fff;
+      border-radius: 20px;
+    }
 
-.card__title {
-  font-size: 23px;
-  font-weight: 900;
-  color: #333;
-}
+    .card__title {
+      font-size: 23px;
+      font-weight: 900;
+      color: #333;
+    }
 
-.card__content {
-  font-size: 13px;
-  line-height: 18px;
-  color: #333;
-}
+    .card__content {
+      font-size: 13px;
+      line-height: 18px;
+      color: #333;
+    }
 
-.card__form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+    .card__form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-.card__form input {
-  margin-top: 10px;
-  outline: 0;
-  background: rgb(255, 255, 255);
-  box-shadow: transparent 0px 0px 0px 1px inset;
-  padding: 0.6em;
-  border-radius: 14px;
-  border: 1px solid #333;
-  color: black;
-}
+    .card__form input {
+      margin-top: 10px;
+      outline: 0;
+      background: rgb(255, 255, 255);
+      padding: 0.6em;
+      border-radius: 14px;
+      border: 1px solid #333;
+      color: black;
+    }
 
-.card__form button {
-  border: 0;
-  background: #111;
-  color: #fff;
-  padding: 0.68em;
-  border-radius: 14px;
-  font-weight: bold;
-}
+    .card__form button {
+      border: 0;
+      background: #111;
+      color: #fff;
+      padding: 0.68em;
+      border-radius: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-.sign-up:hover {
-  opacity: 0.8;
-}
-
-.error {
+    .error {
       color: red;
       margin-top: 10px;
       display: none;
-}
+    }
+
+    /* === PANORAMA === */
+    #panorama {
+      display: none;
+      height: 100%;
+      width: 100%;
+    }
+
+    .fill-viewport {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+    }
+
+    #viewer { z-index: 1; }
+    #preloadContainer {
+      z-index: 2;
+      opacity: 0;
+      background-color: rgba(255, 255, 255, 1);
+      transition: opacity 0.5s;
+    }
 
   </style>
 </head>
 <body>
 
-<div class="card">
-  <span class="card__title">Mot de Passe</span>
-  <p class="card__content">Entrez votre mot de passe pour accéder aux vue
-  </p>
-  <div class="card__form">
-      <input type="password" id="password" placeholder="Mot de passe">
-      <button class="sign-up" onclick="checkPassword()"> Connexion</button>
+  <!-- FORMULAIRE DE CONNEXION -->
+  <div id="login">
+    <div class="card">
+      <span class="card__title">Mot de Passe</span>
+      <p class="card__content">Entrez votre mot de passe pour accéder aux vues</p>
+      <div class="card__form">
+        <input type="password" id="password" placeholder="Mot de passe">
+        <button onclick="checkPassword()">Connexion</button>
+      </div>
+      <p class="card__content error" id="error">Mot de passe incorrect</p>
+    </div>
   </div>
-  <p class="card__content error" id="error">Mot de passe incorrect
-  </p>
-</div>
 
-<script>
-  const CORRECT_PASSWORD = "ONAIR";
+  <!-- PANORAMA -->
+  <div id="panorama">
+    <div id="preloadContainer" class="fill-viewport">
+      <div style="z-index: 4; position: absolute; overflow: hidden; left: 0%; top: 50%; width: 100%; height: 10%;">
+        <div style="text-align:center; color:#000;">
+          <div style="text-align:center; font-size:1.666vmin;">
+            <span style="color:#777; font-size:1.67vmin;">Loading virtual tour. Please wait...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="viewer" class="fill-viewport"></div>
+  </div>
 
-  function checkPassword() {
-    const input = document.getElementById("password").value;
-    if (input === CORRECT_PASSWORD) {
-      window.location.href = "panorama.htm";
-    } else {
-      document.getElementById("error").style.display = "block";
+  <script>
+    const CORRECT_PASSWORD = "ONAIR";
+
+    function checkPassword() {
+      const input = document.getElementById("password").value;
+      const error = document.getElementById("error");
+      if (input === CORRECT_PASSWORD) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("panorama").style.display = "block";
+        // Si nécessaire, on peut déclencher une fonction ici pour charger manuellement la vue
+      } else {
+        error.style.display = "block";
+      }
     }
-  }
-</script>
+  </script>
 
 </body>
 </html>
